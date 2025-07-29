@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Clone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="workspace-name">My Workspace</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item" id="settings-btn">&#x2699; Settings</a>
+                <div class="pages-list" id="pages-list">
+                    <!-- Pages will be dynamically added here -->
+                </div>
+                <button class="new-page-btn" id="new-page-btn">+ New Page</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+                        <div class="page-header">
+                <h1 contenteditable="true">Untitled Page</h1>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search in page...">
+                    <button id="clear-search" title="Clear search">&times;</button>
+                    <div id="search-results" class="search-results" style="display: none;">
+                        <div class="search-header">
+                            <span id="search-count">0 results</span>
+                            <div class="search-navigation">
+                                <button id="search-prev" title="Previous result">&uarr;</button>
+                                <button id="search-next" title="Next result">&darr;</button>
+                            </div>
+                        </div>
+                        <div id="search-list" class="search-list"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="toolbar">
+                <button data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
+                <button data-command="italic" title="Italic"><i class="fas fa-italic"></i></button>
+                <button data-command="underline" title="Underline"><i class="fas fa-underline"></i></button>
+                <button data-command="strikeThrough" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+                <button data-command="formatBlock" data-value="h1" title="Heading 1">H1</button>
+                <button data-command="formatBlock" data-value="h2" title="Heading 2">H2</button>
+                <button data-command="formatBlock" data-value="p" title="Paragraph">P</button>
+                <button data-command="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                <button data-command="insertUnorderedList" title="Bulleted List"><i class="fas fa-list-ul"></i></button>
+                <button data-command="justifyLeft" title="Align Left"><i class="fas fa-align-left"></i></button>
+                <button data-command="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
+                <button data-command="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
+                <label for="font-color-picker" class="toolbar-label" title="Text Color"><i class="fas fa-font"></i></label>
+                <input type="color" id="font-color-picker">
+                <label for="back-color-picker" class="toolbar-label" title="Highlight Color"><i class="fas fa-highlighter"></i></label>
+                <input type="color" id="back-color-picker">
+                <button data-command="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
+                <button data-command="insertImage" title="Insert Image"><i class="fas fa-image"></i></button>
+                <button data-command="insertVideo" title="Insert Video"><i class="fas fa-video"></i></button>
+            </div>
+            <div class="editor-area" contenteditable="true">
+                <p>Start typing here...</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="context-menu" class="context-menu" style="display: none;">
+        <ul>
+            <li data-action="delete"><i class="fas fa-trash-alt"></i> Delete Page</li>
+        </ul>
+    </div>
+
+    <div id="text-context-menu" class="context-menu" style="display: none;">
+        <ul>
+            <li data-command="bold"><i class="fas fa-bold"></i> Bold</li>
+            <li data-command="italic"><i class="fas fa-italic"></i> Italic</li>
+            <li data-command="underline"><i class="fas fa-underline"></i> Underline</li>
+            <li data-command="strikeThrough"><i class="fas fa-strikethrough"></i> Strikethrough</li>
+            <li class="context-separator"></li>
+            <li data-command="formatBlock" data-value="h1"><i class="fas fa-heading"></i> Heading 1</li>
+            <li data-command="formatBlock" data-value="h2"><i class="fas fa-heading"></i> Heading 2</li>
+            <li data-command="formatBlock" data-value="p"><i class="fas fa-paragraph"></i> Paragraph</li>
+            <li class="context-separator"></li>
+            <li data-command="insertOrderedList"><i class="fas fa-list-ol"></i> Numbered List</li>
+            <li data-command="insertUnorderedList"><i class="fas fa-list-ul"></i> Bulleted List</li>
+            <li class="context-separator"></li>
+            <li data-command="justifyLeft"><i class="fas fa-align-left"></i> Align Left</li>
+            <li data-command="justifyCenter"><i class="fas fa-align-center"></i> Align Center</li>
+            <li data-command="justifyRight"><i class="fas fa-align-right"></i> Align Right</li>
+            <li class="context-separator"></li>
+            <li data-command="createLink"><i class="fas fa-link"></i> Insert Link</li>
+            <li data-command="insertImage"><i class="fas fa-image"></i> Insert Image</li>
+        </ul>
+    </div>
+
+    <!-- Generic Input Modal -->
+    <div id="input-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="input-modal-title">Insert URL</h3>
+            <input type="text" id="input-modal-input" placeholder="https://example.com">
+            <div class="modal-buttons">
+                <button id="input-modal-submit">Submit</button>
+                <button id="input-modal-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Modals -->
+    <div id="password-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 id="password-modal-title">Enter Password</h3>
+            <input type="password" id="password-input" placeholder="Password...">
+            <div class="modal-actions">
+                <button id="password-submit">Confirm</button>
+                <button id="password-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Sidebar -->
+    <div id="settings-sidebar" class="settings-sidebar">
+        <div class="settings-sidebar-header">
+            <h3><i class="fas fa-cog"></i> Settings</h3>
+            <span class="close-btn" id="settings-close-btn">&times;</span>
+        </div>
+        <div class="settings-sidebar-content">
+            <!-- Appearance Section -->
+            <div class="settings-section">
+                <h4><i class="fas fa-palette"></i> Appearance</h4>
+                
+                <div class="setting-item">
+                    <label for="theme-select">Theme</label>
+                    <select id="theme-select" class="settings-input">
+                        <option value="dark">🌙 Dark</option>
+                        <option value="light">☀️ Light</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label for="font-select">Font Family</label>
+                    <select id="font-select" class="settings-input">
+                        <option value="'Unbounded', sans-serif">Unbounded (Modern)</option>
+                        <option value="'Inter', sans-serif">Inter (Clean)</option>
+                        <option value="'JetBrains Mono', monospace">JetBrains Mono (Code)</option>
+                        <option value="'Arial', sans-serif">Arial (Classic)</option>
+                        <option value="'Verdana', sans-serif">Verdana (Web Safe)</option>
+                        <option value="'Georgia', serif">Georgia (Serif)</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label for="font-size-slider">Font Size: <span id="font-size-value">16</span>px</label>
+                    <input type="range" id="font-size-slider" min="12" max="28" value="16" class="settings-slider">
+                </div>
+
+                <div class="setting-item">
+                    <label for="line-height-slider">Line Height: <span id="line-height-value">1.6</span></label>
+                    <input type="range" id="line-height-slider" min="1.2" max="2.5" step="0.1" value="1.6" class="settings-slider">
+                </div>
+
+                <div class="setting-item">
+                    <label for="bg-url-input">Background Image</label>
+                    <div class="input-group">
+                        <input type="text" id="bg-url-input" class="settings-input" placeholder="Enter image URL...">
+                        <button id="bg-url-submit" class="settings-button-small">Apply</button>
+                        <button id="bg-clear" class="settings-button-small secondary">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Section -->
+            <div class="settings-section">
+                <h4><i class="fas fa-edit"></i> Editor</h4>
+                
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="auto-save" checked>
+                        <span class="checkmark"></span>
+                        Auto-save content
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="spell-check" checked>
+                        <span class="checkmark"></span>
+                        Spell checking
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="word-wrap" checked>
+                        <span class="checkmark"></span>
+                        Word wrap
+                    </label>
+                </div>
+            </div>
+
+            <!-- Image & Media Section -->
+            <div class="settings-section">
+                <h4><i class="fas fa-image"></i> Images & Media</h4>
+                
+                <div class="setting-item">
+                    <label for="default-image-size">Default Image Size</label>
+                    <select id="default-image-size" class="settings-input">
+                        <option value="small">Small (200px)</option>
+                        <option value="medium" selected>Medium (400px)</option>
+                        <option value="large">Large (600px)</option>
+                        <option value="full">Full Width</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="auto-resize-images" checked>
+                        <span class="checkmark"></span>
+                        Remember image sizes
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-image-controls" checked>
+                        <span class="checkmark"></span>
+                        Show image controls on hover
+                    </label>
+                </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="settings-section">
+                <h4><i class="fas fa-search"></i> Search</h4>
+                
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="search-case-sensitive">
+                        <span class="checkmark"></span>
+                        Case sensitive search
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="search-whole-words">
+                        <span class="checkmark"></span>
+                        Match whole words only
+                    </label>
+                </div>
+            </div>
+
+            <!-- Data Management Section -->
+            <div class="settings-section">
+                <h4><i class="fas fa-database"></i> Data Management</h4>
+                
+                <div class="setting-item">
+                    <button id="export-btn" class="settings-button"><i class="fas fa-download"></i> Export All Pages</button>
+                </div>
+                
+                <div class="setting-item">
+                    <button id="import-btn" class="settings-button"><i class="fas fa-upload"></i> Import Pages</button>
+                    <input type="file" id="import-file" style="display: none;" accept=".txt,.json">
+                </div>
+                
+                <div class="setting-item">
+                    <button id="clear-image-cache" class="settings-button secondary"><i class="fas fa-trash"></i> Clear Image Cache</button>
+                </div>
+            </div>
+
+            <!-- Advanced Section -->
+            <div class="settings-section">
+                <h4><i class="fas fa-cogs"></i> Advanced</h4>
+                
+                <div class="setting-item">
+                    <label for="max-pages-slider">Max Pages to Keep: <span id="max-pages-value">50</span></label>
+                    <input type="range" id="max-pages-slider" min="10" max="200" value="50" class="settings-slider">
+                </div>
+
+                <div class="setting-item">
+                    <button id="reset-settings-btn" class="settings-button danger"><i class="fas fa-exclamation-triangle"></i> Reset All Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Image Modal -->
+    <div id="fullscreen-image-modal" class="fullscreen-image-modal">
+        <button class="fullscreen-close" onclick="closeFullscreenImage()">&times;</button>
+        <img id="fullscreen-image" src="" alt="Fullscreen Image">
+    </div>
+</body>
+</html>
